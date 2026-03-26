@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a0f0a" />
+  <meta name="description" content="Personal stock market tracker — watchlist, live prices, change indicators" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Ticker</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ── Header ── -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <span class="brand-dot"></span>
+        <span class="brand-name">TICKER</span>
+      </div>
+      <div class="header-meta">
+        <span class="last-updated" id="last-updated">--:--</span>
+        <button class="refresh-btn" id="refresh-btn" aria-label="Refresh prices" title="Refresh all">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1.5 8A6.5 6.5 0 1 0 3 3.5"/>
+            <polyline points="1 1 3 3.5 5.5 2"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Search ── -->
+  <section class="search-section">
+    <div class="search-wrapper">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <circle cx="6.5" cy="6.5" r="5"/>
+        <line x1="10.5" y1="10.5" x2="14" y2="14"/>
+      </svg>
+      <input
+        type="text"
+        id="search-input"
+        class="search-input"
+        placeholder="Search ticker — AAPL, MSFT, RELIANCE.BSE…"
+        autocomplete="off"
+        autocapitalize="characters"
+        spellcheck="false"
+      />
+      <button class="search-clear" id="search-clear" aria-label="Clear search" hidden>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Search results dropdown -->
+    <div class="search-results" id="search-results" hidden>
+      <div class="search-result-item" id="search-preview">
+        <div class="result-ticker" id="preview-ticker">—</div>
+        <div class="result-label">Tap to add to watchlist</div>
+        <button class="add-btn" id="add-btn">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <line x1="7" y1="1" x2="7" y2="13"/><line x1="1" y1="7" x2="13" y2="7"/>
+          </svg>
+          Add
+        </button>
+      </div>
+      <div class="search-status" id="search-status"></div>
+    </div>
+  </section>
+
+  <!-- ── Market Summary Bar ── -->
+  <section class="market-bar" id="market-bar">
+    <div class="market-pill">
+      <span class="market-label">Market</span>
+      <span class="market-status" id="market-status">Checking…</span>
+    </div>
+    <div class="market-pill">
+      <span class="market-label">Watchlist</span>
+      <span class="market-count" id="watchlist-count">0 stocks</span>
+    </div>
+    <div class="market-pill">
+      <span class="market-label">API calls</span>
+      <span class="market-count" id="api-count">0 / 25</span>
+    </div>
+  </section>
+
+  <!-- ── Watchlist ── -->
+  <main class="watchlist-section">
+
+    <!-- Empty state -->
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0.3">
+          <rect x="8" y="14" width="32" height="22" rx="2"/>
+          <line x1="8" y1="20" x2="40" y2="20"/>
+          <line x1="16" y1="28" x2="22" y2="28"/>
+          <line x1="16" y1="32" x2="28" y2="32"/>
+          <line x1="32" y1="10" x2="32" y2="14"/>
+          <line x1="24" y1="8" x2="24" y2="14"/>
+          <line x1="16" y1="10" x2="16" y2="14"/>
+        </svg>
+      </div>
+      <p class="empty-title">Your watchlist is empty</p>
+      <p class="empty-sub">Search a ticker above — try AAPL, TSLA, or INFY.BSE</p>
+    </div>
+
+    <!-- Stock cards grid -->
+    <div class="watchlist-grid" id="watchlist-grid"></div>
+
+  </main>
+
+  <!-- ── Stock Card Template ── -->
+  <template id="stock-card-template">
+    <article class="stock-card" data-ticker="">
+      <div class="card-top">
+        <div class="card-left">
+          <div class="card-ticker"></div>
+          <div class="card-name"></div>
+        </div>
+        <div class="card-right">
+          <button class="remove-btn" aria-label="Remove from watchlist" title="Remove">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+              <line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="card-price-row">
+        <div class="card-price">—</div>
+        <div class="card-badge">
+          <span class="card-change">—</span>
+          <span class="card-change-pct">—</span>
+        </div>
+      </div>
+
+      <div class="card-meta-row">
+        <div class="card-meta-item">
+          <span class="meta-label">Open</span>
+          <span class="meta-val card-open">—</span>
+        </div>
+        <div class="card-meta-item">
+          <span class="meta-label">High</span>
+          <span class="meta-val card-high">—</span>
+        </div>
+        <div class="card-meta-item">
+          <span class="meta-label">Low</span>
+          <span class="meta-val card-low">—</span>
+        </div>
+        <div class="card-meta-item">
+          <span class="meta-label">Vol</span>
+          <span class="meta-val card-volume">—</span>
+        </div>
+      </div>
+
+      <div class="card-sparkline">
+        <svg class="sparkline-svg" viewBox="0 0 200 40" preserveAspectRatio="none">
+          <polyline class="sparkline-line" points="" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <div class="card-footer">
+        <span class="card-updated">Not yet fetched</span>
+        <button class="card-refresh-btn" aria-label="Refresh this stock">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1.5 8A6.5 6.5 0 1 0 3 3.5"/><polyline points="1 1 3 3.5 5.5 2"/>
+          </svg>
+          Refresh
+        </button>
+      </div>
+    </article>
+  </template>
+
+  <!-- ── Toast notification ── -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- ── Offline Banner ── -->
+  <div class="offline-banner" id="offline-banner" hidden>
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+      <path d="M1 1l14 14M9.5 4.5A5 5 0 0 1 13 8M3 8a5 5 0 0 1 1.5-3.5M6 11a3 3 0 0 1 4 0M8 14h.01"/>
+    </svg>
+    You're offline — showing cached data
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
