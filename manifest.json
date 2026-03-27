@@ -2,13 +2,13 @@
     "name": "Ticker — Stock Market Tracker",
     "short_name": "Ticker",
     "description": "Personal stock watchlist with live prices and change indicators",
-    "start_url": "/",
+    "start_url": "./index.html",
     "display": "standalone",
     "orientation": "portrait-primary",
     "background_color": "#0a0f0a",
     "theme_color": "#0a0f0a",
     "lang": "en",
-    "scope": "/",
+    "scope": "./",
     "icons": [
       {
         "src": "icons/icon-192.png",
@@ -29,7 +29,7 @@
         "name": "Open Watchlist",
         "short_name": "Watchlist",
         "description": "Jump straight to your stock watchlist",
-        "url": "/",
+        "url": "./index.html",
         "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
       }
     ]
