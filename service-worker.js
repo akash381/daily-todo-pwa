@@ -3,20 +3,20 @@
    Caches the app shell so it loads offline
    ═══════════════════════════════════════════ */
 
-   const CACHE_NAME    = 'ticker-v1';
-   const OFFLINE_URL   = '/offline.html';
+   const CACHE_NAME    = 'ticker-v4';
+   const OFFLINE_URL   = './offline.html';
    
    /* Files that make up the app shell —
       these are cached on install so the app
       loads instantly even with no internet */
    const SHELL_FILES = [
-     '/',
-     '/index.html',
-     '/style.css',
-     '/app.js',
-     '/manifest.json',
-     'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap'
-   ];
+  './',
+  './index.html',
+  './style.css',
+  './app.js',
+  './manifest.json',
+  'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap'
+];
    
    /* ── Install: cache the shell ── */
    self.addEventListener('install', event => {
